@@ -1,0 +1,70 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb
+
+# VSCode
+.vscode/
+*.code-workspace
+
+# PyCharm
+.idea/
+*.iml
+
+# Data files
+*.csv
+#*.json
+*.pkl
+*.h5
+data_cache/
+dataset.csv
+
+# Logs
+*.log
+logs/
+
+# Model files (optional, may want to include some models)
+# *.pkl
+# *.h5
+
+# Mac OS
+.DS_Store
+
+# Documentation
+# Uncomment if you don't want to track documentation builds
+# docs/_build/
+
+# Custom for this project
+# Temporary files or notebooks for exploration
+temp/
+exploration/

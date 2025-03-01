@@ -1,0 +1,58 @@
+# Configuration file for financial forecasting models
+
+# Target variable - what we are trying to predict
+target_variable: target_CPI_12_month_change
+
+# Feature variables to use in models
+feature_variables:
+  - days_until_print
+  - crude_oil
+  - natural_gas
+  - sp500
+  - vix
+  - treasury_yield
+  - unemployment_rate
+  - m2
+  - fed_funds
+  - gold
+  - silver
+  - copper
+  - dollar
+
+# Model training parameters
+model_parameters:
+  train_test_split:
+    test_size: 0.2
+    random_state: 42
+  scaling: true
+
+# Specific model configurations
+models:
+  multiple_linear_regression:
+    fit_intercept: false
+  random_forest:
+    n_estimators: 100
+    random_state: 42
+  xgboost:
+    n_estimators: 100
+    random_state: 42
+
+# Data sources configuration
+data_sources:
+  bls:
+    series_id: CUUR0000SA0
+    start_year: '2000'
+    end_year: '2025'
+  fred:
+    start_date: '2000-01-01'
+    # end_date: Leave as None to use current date
+  yahoo:
+    tickers:
+      - ^GSPC  # S&P 500
+      - ^VIX   # Volatility Index
+      - CL=F   # Crude Oil
+      - NG=F   # Natural Gas
+      - GC=F   # Gold
+      - SI=F   # Silver
+      - HG=F   # Copper
+      - DX-Y.NYB  # US Dollar Index 
