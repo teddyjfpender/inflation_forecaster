@@ -52,6 +52,7 @@ dataset.csv
 # Logs
 *.log
 logs/
+logs/*
 
 # Model files (optional, may want to include some models)
 # *.pkl

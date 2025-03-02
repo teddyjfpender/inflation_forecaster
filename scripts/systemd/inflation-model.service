@@ -1,0 +1,21 @@
+[Unit]
+Description=Daily Inflation Model Update
+After=network.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/path/to/inflation_forecaster
+# If using Python virtual environment
+ExecStart=/bin/bash -c 'source /path/to/inflation_forecaster/venv/bin/activate && python /path/to/inflation_forecaster/scripts/daily_update.py --auto-merge'
+# Without virtual environment:
+# ExecStart=/usr/bin/python3 /path/to/inflation_forecaster/scripts/daily_update.py --auto-merge
+User=your_username
+Group=your_group
+Environment="GITHUB_TOKEN=your_github_token"
+Environment="GITHUB_REPO_OWNER=your_github_username"
+Environment="GITHUB_REPO_NAME=inflation_forecaster"
+# Load environment variables from .env file
+EnvironmentFile=/path/to/inflation_forecaster/.env
+
+[Install]
+WantedBy=multi-user.target 

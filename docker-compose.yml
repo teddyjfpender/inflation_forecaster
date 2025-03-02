@@ -1,0 +1,37 @@
+version: '3'
+
+services:
+  # Service for one-time model run
+  model-run:
+    build: .
+    volumes:
+      - ./data:/app/data
+      - ./docs/images:/app/docs/images
+      - ./src/saved_models:/app/src/saved_models
+      - ./logs:/app/logs
+    env_file:
+      - .env
+    command: ["daily", "--no-git"]  # Run model without Git operations
+  
+  # Service for scheduled daily runs (with cron inside container)
+  model-scheduler:
+    build: .
+    volumes:
+      - ./data:/app/data
+      - ./docs/images:/app/docs/images
+      - ./src/saved_models:/app/src/saved_models
+      - ./logs:/app/logs
+      - ./.git:/app/.git  # Mount Git directory for PR operations
+    env_file:
+      - .env
+    environment:
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - GITHUB_REPO_OWNER=${GITHUB_REPO_OWNER:-yourusername}
+      - GITHUB_REPO_NAME=${GITHUB_REPO_NAME:-inflation_forecaster}
+    command: ["cron"]  # Run cron daemon
+    restart: unless-stopped
+
+# Usage:
+# 1. One-time run: docker-compose run model-run
+# 2. Start scheduler: docker-compose up -d model-scheduler
+# 3. Stop scheduler: docker-compose down 

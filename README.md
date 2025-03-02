@@ -48,6 +48,18 @@ python run_inflation_model.py
 inflation_forecaster
 ```
 
+### Scheduled Model Runs
+
+The repository includes several options for setting up scheduled model runs:
+
+- **GitHub Actions**: Automatically runs every day at 6 AM UTC (recommended)
+- **Python Script**: Flexible script with logging and GitHub PR creation
+- **Shell Script**: Simple bash script for cron setups
+- **Docker Container**: Isolated environment with optional scheduling
+- **Systemd Service**: For Linux servers
+
+For detailed setup instructions, see [docs/ScheduledModelRuns.md](docs/ScheduledModelRuns.md).
+
 ### Prediction Storage
 
 Predictions are stored in an organized directory structure:
