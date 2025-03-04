@@ -45,18 +45,41 @@ jobs:
         run: |
           echo "BLS_API_KEY=$BLS_API_KEY" > .env
           echo "FRED_API_KEY=$FRED_API_KEY" >> .env
+          
+      - name: Debug - Show environment and gitignore
+        run: |
+          echo "Current directory structure:"
+          ls -la
+          echo "\nAll .gitignore files:"
+          find . -name .gitignore -exec echo "{}" \; -exec cat "{}" \;
+          echo "\nEnvironment variables (safe display):"
+          env | grep -E "BLS_API_KEY|FRED_API_KEY" | sed 's/=.*/=REDACTED/'
       
       - name: Run inflation models
         run: |
+          echo "Running model..."
           python run_inflation_model.py
-          echo "Models executed successfully"
+          echo "\nFiles in data directory after model run:"
+          ls -la data/
+          echo "\nContents of prediction store (if exists):"
+          cat data/prediction_store.json || echo "prediction_store.json not found"
+      
+      - name: Debug - Show Git status and diff
+        run: |
+          echo "Git status:"
+          git status
+          echo "\nGit diff:"
+          git diff
       
       - name: Check for changes
         id: check_changes
         run: |
           if [[ -n "$(git status --porcelain)" ]]; then
+            echo "Changes detected:"
+            git status --porcelain
             echo "changes=true" >> $GITHUB_OUTPUT
           else
+            echo "No changes detected"
             echo "changes=false" >> $GITHUB_OUTPUT
           fi
       
@@ -73,6 +96,7 @@ jobs:
         run: |
           TODAY=$(date +'%Y-%m-%d')
           git add data/ src/saved_models/ docs/images/
+          git status
           git commit -m "Daily model update ${TODAY}" -m "Automated model update with latest economic data"
       
       - name: Push changes

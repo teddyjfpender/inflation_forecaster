@@ -43,7 +43,9 @@ venv.bak/
 
 # Data files
 *.csv
-#*.json
+# Explicitly track JSON files
+!data/predictions/**/*.json
+!data/prediction_store.json
 *.pkl
 *.h5
 data_cache/
@@ -54,16 +56,19 @@ dataset.csv
 logs/
 logs/*
 
-# Model files (optional, may want to include some models)
-# *.pkl
-# *.h5
+# Model files
+# Explicitly track saved models
+!src/saved_models/**/*.pkl
+!src/saved_models/**/*.h5
 
 # Mac OS
 .DS_Store
 
 # Documentation
-# Uncomment if you don't want to track documentation builds
-# docs/_build/
+# Explicitly track documentation images
+!docs/images/**/*.png
+!docs/images/**/*.jpg
+!docs/images/**/*.jpeg
 
 # Custom for this project
 # Temporary files or notebooks for exploration
