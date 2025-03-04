@@ -140,9 +140,9 @@ jobs:
             exit 1
           fi
           
-          # Create PR and capture the PR number
+          # Create PR and capture the output
           echo "Creating pull request..."
-          PR_DATA=$(gh pr create \
+          PR_URL=$(gh pr create \
             --title "Daily model update $(date +'%Y-%m-%d')" \
             --body "# Automated Daily Model Update
 
@@ -157,19 +157,24 @@ jobs:
             --base main \
             --head "$BRANCH_NAME" \
             --label "automated" \
-            --label "model-update" \
-            --json number,url)
+            --label "model-update")
           
-          # Extract PR number and URL
-          PR_NUMBER=$(echo "$PR_DATA" | jq -r .number)
-          PR_URL=$(echo "$PR_DATA" | jq -r .url)
-          
-          if [ -z "$PR_NUMBER" ] || [ "$PR_NUMBER" = "null" ]; then
-            echo "Error: Failed to get PR number"
+          if [ -z "$PR_URL" ]; then
+            echo "Error: Failed to get PR URL"
             exit 1
           fi
           
-          echo "Created PR #$PR_NUMBER: $PR_URL"
+          echo "Created PR: $PR_URL"
+          
+          # Extract PR number from URL
+          PR_NUMBER=$(echo $PR_URL | sed -E 's/.*\/([0-9]+)$/\1/')
+          
+          if [ -z "$PR_NUMBER" ]; then
+            echo "Error: Failed to extract PR number from URL: $PR_URL"
+            exit 1
+          fi
+          
+          echo "PR number: $PR_NUMBER"
           
           # Wait for PR to be available
           echo "Waiting for PR to be ready..."
@@ -181,7 +186,7 @@ jobs:
           
           # Verify PR status
           echo "PR Status:"
-          gh pr view $PR_NUMBER --json mergeStateStatus,mergeable,state
+          gh pr view $PR_NUMBER
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
