@@ -9,6 +9,7 @@ on:
   
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   update_models:
@@ -20,6 +21,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -45,70 +47,96 @@ jobs:
         run: |
           echo "BLS_API_KEY=$BLS_API_KEY" > .env
           echo "FRED_API_KEY=$FRED_API_KEY" >> .env
+      
+      - name: Create required directories
+        run: |
+          mkdir -p data/predictions/cpi_12_month_change
+          mkdir -p src/saved_models
+          mkdir -p docs/images
           
-      - name: Debug - Show environment and gitignore
+      - name: Debug - Pre-run state
         run: |
           echo "Current directory structure:"
           ls -la
-          echo "\nAll .gitignore files:"
-          find . -name .gitignore -exec echo "{}" \; -exec cat "{}" \;
-          echo "\nEnvironment variables (safe display):"
-          env | grep -E "BLS_API_KEY|FRED_API_KEY" | sed 's/=.*/=REDACTED/'
+          echo "\nPre-run data directory contents:"
+          ls -la data/ || echo "data directory empty"
+          ls -la data/predictions/ || echo "predictions directory empty"
+          echo "\nPre-run saved_models directory contents:"
+          ls -la src/saved_models/ || echo "saved_models directory empty"
       
       - name: Run inflation models
         run: |
           echo "Running model..."
           python run_inflation_model.py
-          echo "\nFiles in data directory after model run:"
+          
+      - name: Debug - Post-run state
+        run: |
+          echo "Post-run directory contents:"
+          echo "\nData directory:"
           ls -la data/
-          echo "\nContents of prediction store (if exists):"
-          cat data/prediction_store.json || echo "prediction_store.json not found"
+          echo "\nPredictions directory:"
+          ls -la data/predictions/cpi_12_month_change/
+          echo "\nSaved models directory:"
+          ls -la src/saved_models/
+          echo "\nImages directory:"
+          ls -la docs/images/
+          
+          echo "\nContents of prediction files:"
+          for f in data/predictions/cpi_12_month_change/*.json; do
+            echo "\nFile: $f"
+            cat "$f"
+          done
       
-      - name: Debug - Show Git status and diff
+      - name: Prepare changes
+        id: prepare_changes
         run: |
-          echo "Git status:"
-          git status
-          echo "\nGit diff:"
-          git diff
-      
-      - name: Check for changes
-        id: check_changes
-        run: |
-          if [[ -n "$(git status --porcelain)" ]]; then
-            echo "Changes detected:"
-            git status --porcelain
-            echo "changes=true" >> $GITHUB_OUTPUT
-          else
-            echo "No changes detected"
-            echo "changes=false" >> $GITHUB_OUTPUT
-          fi
-      
-      - name: Create branch with date
-        if: steps.check_changes.outputs.changes == 'true'
-        run: |
+          # Ensure we're on a clean state
+          git reset --hard HEAD
+          
+          # Create new branch
           TODAY=$(date +'%Y-%m-%d')
           BRANCH_NAME="model-update-${TODAY}"
           git checkout -b $BRANCH_NAME
-          echo "BRANCH_NAME=${BRANCH_NAME}" >> $GITHUB_ENV
+          
+          # Stage all relevant files
+          git add data/predictions/cpi_12_month_change/*.json
+          git add data/prediction_store.json
+          git add src/saved_models/*.pkl
+          git add docs/images/*.png
+          
+          # Check if there are actual changes
+          if [[ -n "$(git status --porcelain)" ]]; then
+            echo "changes_detected=true" >> $GITHUB_OUTPUT
+            echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+            
+            # Show what's about to be committed
+            echo "Files to be committed:"
+            git status --porcelain
+          else
+            echo "changes_detected=false" >> $GITHUB_OUTPUT
+          fi
       
-      - name: Commit changes
-        if: steps.check_changes.outputs.changes == 'true'
+      - name: Commit and push changes
+        if: steps.prepare_changes.outputs.changes_detected == 'true'
         run: |
-          TODAY=$(date +'%Y-%m-%d')
-          git add data/ src/saved_models/ docs/images/
-          git status
-          git commit -m "Daily model update ${TODAY}" -m "Automated model update with latest economic data"
-      
-      - name: Push changes
-        if: steps.check_changes.outputs.changes == 'true'
-        run: |
-          git push -u origin $BRANCH_NAME
+          # Get branch name from previous step
+          BRANCH_NAME="${{ steps.prepare_changes.outputs.branch_name }}"
+          
+          # Commit changes
+          git commit -m "Daily model update $(date +'%Y-%m-%d')" -m "Automated model update with latest economic data"
+          
+          # Force push to ensure our changes take precedence
+          git push -f origin $BRANCH_NAME
+          
+          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
       
       - name: Create Pull Request
-        if: steps.check_changes.outputs.changes == 'true'
+        if: steps.prepare_changes.outputs.changes_detected == 'true'
+        id: create-pr
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "Daily model update ${{ env.BRANCH_NAME }}"
           title: "Daily model update ${{ env.BRANCH_NAME }}"
           body: |
             # Automated Daily Model Update
@@ -124,13 +152,11 @@ jobs:
           branch: ${{ env.BRANCH_NAME }}
           base: main
           labels: automated,model-update
-          draft: false
+          delete-branch: true
       
-      - name: Auto-merge Pull Request
-        if: steps.check_changes.outputs.changes == 'true'
-        uses: pascalgn/automerge-action@v0.15.6
+      - name: Enable Pull Request Automerge
+        if: steps.prepare_changes.outputs.changes_detected == 'true'
+        run: |
+          gh pr merge --auto --merge "${{ steps.create-pr.outputs.pull-request-number }}"
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          MERGE_METHOD: squash
-          MERGE_LABELS: automated,model-update
-          MERGE_DELETE_BRANCH: true 
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
