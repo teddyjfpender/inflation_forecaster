@@ -1,7 +1,7 @@
 {
   "model_name": "xgboost",
   "target_variable": "cpi_12_month_change",
-  "last_updated": "2025-04-22T06:08:24.746182",
+  "last_updated": "2025-04-23T06:08:51.194633",
   "historical_predictions": [
     {
       "date": "2000-01-01",
@@ -83197,6 +83197,15 @@
       "confidence_interval": [
         0.022451833118300953,
         0.02541539422740408
+      ]
+    },
+    {
+      "date": "2025-04-23",
+      "prediction": 0.02392132394015789,
+      "actual": 0.023907252538964974,
+      "confidence_interval": [
+        0.02252650922644394,
+        0.02531613865387184
       ]
     }
   ]
