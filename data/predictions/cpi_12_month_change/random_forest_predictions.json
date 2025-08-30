@@ -1,7 +1,7 @@
 {
   "model_name": "random_forest",
   "target_variable": "cpi_12_month_change",
-  "last_updated": "2025-08-29T06:10:10.854496",
+  "last_updated": "2025-08-30T06:08:26.410793",
   "historical_predictions": [
     {
       "date": "2000-01-01",
@@ -84358,6 +84358,15 @@
       "confidence_interval": [
         0.02604718487373931,
         0.02805086306928866
+      ]
+    },
+    {
+      "date": "2025-08-30",
+      "prediction": 0.027049023971513986,
+      "actual": 0.027049023971513986,
+      "confidence_interval": [
+        0.026076171783371748,
+        0.028021876159656223
       ]
     }
   ]
