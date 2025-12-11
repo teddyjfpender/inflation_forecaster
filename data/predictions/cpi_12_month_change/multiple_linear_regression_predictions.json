@@ -1,7 +1,7 @@
 {
   "model_name": "multiple_linear_regression",
   "target_variable": "cpi_12_month_change",
-  "last_updated": "2025-12-10T06:10:27.825650",
+  "last_updated": "2025-12-11T06:10:43.632921",
   "historical_predictions": [
     {
       "date": "2000-01-01",
@@ -85285,6 +85285,15 @@
       "confidence_interval": [
         -0.05861453396998793,
         0.04864350455802308
+      ]
+    },
+    {
+      "date": "2025-12-11",
+      "prediction": -0.004687197231966728,
+      "actual": 0.030126767755256134,
+      "confidence_interval": [
+        -0.05803728737062275,
+        0.04866289290668929
       ]
     }
   ]
